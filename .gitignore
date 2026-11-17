@@ -1,0 +1,6 @@
+# MATLAB's autosaves and editor backups
+*.asv
+*.m~
+# Reports of a local test run
+/coverage.xml
+.DS_Store
