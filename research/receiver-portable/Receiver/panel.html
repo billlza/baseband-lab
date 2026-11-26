@@ -1,11 +1,66 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mooring · M7 蜂窝测量</title><link rel="stylesheet" href="panel.css"></head>
-<body><main><header><p class="eyebrow">MOORING / MR7450</p><h1>蜂窝信号测量</h1><p id="target"></p></header>
-<section><div class="options"><label>每次间隔（秒）<input id="interval" type="number" min="1" max="3600" value="60"></label>
-<label>采样次数<input id="count" type="number" min="1" max="1440" value="10"></label></div>
-<div class="buttons"><button id="start">开始采样</button><button id="stop" disabled>停止</button>
-<button id="save" disabled>导出 CSV</button></div><p id="notice" role="status" aria-live="polite"></p></section>
-<section><div class="heading"><h2>无线指标</h2><label class="import">打开已有 CSV<input id="input" type="file" accept=".csv,text/csv"></label></div>
-<p id="counts">尚无观测</p><table><thead><tr><th>接收机指标</th><th>最近一次</th><th>中位数</th><th>有效次数</th></tr></thead><tbody id="metrics"></tbody></table>
-<p id="when"></p></section></main><script src="panel.js" type="module"></script></body></html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mooring · M7 蜂窝测量</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">MOORING / MR7450</p>
+        <h1>蜂窝信号测量</h1>
+        <p id="target"></p>
+      </header>
+      <section>
+        <div class="options">
+          <label
+            >每次间隔（秒）<input
+              id="interval"
+              type="number"
+              min="1"
+              max="3600"
+              value="60"
+          /></label>
+          <label
+            >采样次数<input
+              id="count"
+              type="number"
+              min="1"
+              max="1440"
+              value="10"
+          /></label>
+        </div>
+        <div class="buttons">
+          <button id="start">开始采样</button
+          ><button id="stop" disabled>停止</button>
+          <button id="save" disabled>导出 CSV</button>
+        </div>
+        <p id="notice" role="status" aria-live="polite"></p>
+      </section>
+      <section>
+        <div class="heading">
+          <h2>无线指标</h2>
+          <label class="import"
+            >打开已有 CSV<input id="input" type="file" accept=".csv,text/csv"
+          /></label>
+        </div>
+        <p id="counts">尚无观测</p>
+        <table>
+          <thead>
+            <tr>
+              <th>接收机指标</th>
+              <th>最近一次</th>
+              <th>中位数</th>
+              <th>有效次数</th>
+            </tr>
+          </thead>
+          <tbody id="metrics"></tbody>
+        </table>
+        <p id="when"></p>
+      </section>
+    </main>
+    <script src="panel.js" type="module"></script>
+  </body>
+</html>

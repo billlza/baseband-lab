@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:">
+<title>Mooring · 射频指标离线分析</title><style>:root {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #182a30;
+  background: #f3f6f4;
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  width: min(100%, 740px);
+  margin: 0 auto;
+  padding: 26px 32px 20px;
+}
+header {
+  border-bottom: 2px solid #38665d;
+  margin-bottom: 17px;
+}
+.eyebrow {
+  font:
+    600 12px ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+  color: #276756;
+}
+h1 {
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  margin: 6px 0;
+}
+h2 {
+  font-size: 19px;
+  margin: 0;
+}
+p {
+  margin: 8px 0 13px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+section {
+  margin-bottom: 24px;
+}
+.options,
+.buttons,
+.heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.options {
+  margin-bottom: 13px;
+}
+.options label {
+  font-size: 13px;
+  display: grid;
+  gap: 4px;
+}
+.options input {
+  width: 120px;
+  padding: 7px 10px;
+  border: 1px solid #728982;
+  background: #fff;
+  border-radius: 5px;
+}
+button,
+.import {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 13px;
+  border: 1px solid #627d72;
+  border-radius: 5px;
+  color: #164436;
+  background: #fff;
+  cursor: pointer;
+}
+#start {
+  background: #205c4d;
+  color: #fff;
+}
+button:disabled {
+  opacity: 0.46;
+  cursor: default;
+}
+.heading {
+  justify-content: space-between;
+}
+.import {
+  position: relative;
+}
+.import input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  text-align: right;
+  padding: 8px 3px;
+  border-bottom: 1px solid #cbd6d0;
+}
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+thead {
+  color: #425e53;
+}
+#notice {
+  min-height: 20px;
+  color: #285e4f;
+}
+#target,
+#counts,
+#when {
+  color: #405950;
+}
+@media (max-width: 470px) {
+  main {
+    padding: 18px 14px;
+  }
+}
+
+main{max-width:850px}canvas{display:block;width:100%;height:180px;margin:6px 0}select{padding:5px;border-radius:4px}tfoot{font-size:12px}</style></head>
+<body><main><header><p class="eyebrow">MOORING / MR7450</p><h1>蜂窝指标离线分析</h1></header>
+<div class="heading"><label class="import">打开 M7 采样 CSV<input id="file" type="file" accept=".csv,text/csv"></label><label>绘图指标 <select id="select"></select></label></div>
+<p id="status" role="status">选取接收机工具或 Mooring 导出的采样文件。</p>
+<canvas id="plot" width="1300" height="310" aria-label="所选接收机指标按 UTC 时间的观测点图"></canvas>
+<table><thead><tr><th>指标</th><th>最低</th><th>中位数</th><th>最高</th><th>有效 / 总数</th></tr></thead><tbody></tbody></table><p id="times"></p>
+</main><script>
+const columns =
+  "at_unix,at_utc,outcome,failure,uptime_secs,temperature_c,thermal,service,network_service,data_service,band,ca_secondary_count,lte_rsrp_dbm,lte_rsrq_db,lte_sinr_db,lte_rssi_dbm,nr_rsrp_dbm,nr_rsrq_db,nr_sinr_db,plmn,session_secs".split(
+    ",",
+  );
+const signals = columns.slice(12, 19);
+const signalLabels = [
+  "LTE RSRP · dBm",
+  "LTE RSRQ · dB",
+  "LTE SINR · dB",
+  "LTE RSSI · dBm",
+  "NR RSRP · dBm",
+  "NR RSRQ · dB",
+  "NR SINR · dB",
+];
+
+function localOrigin(raw) {
+  if (!raw) return null;
+  let url;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password
+  )
+    return null;
+  if (url.hostname === "localhost") return url.origin;
+  const parts = url.hostname.split(".");
+  if (
+    parts.length !== 4 ||
+    !parts.every((v) => /^\d{1,3}$/.test(v) && Number(v) <= 255)
+  )
+    return null;
+  const [a, b] = parts.map(Number);
+  return a === 10 ||
+    a === 127 ||
+    (a === 192 && b === 168) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 169 && b === 254)
+    ? url.origin
+    : null;
+}
+
+// Read tables written by the pinned Mooring exporter. Values are numeric or closed-vocabulary cells.
+function readRows(text) {
+  const lines = text
+    .replace(/^\uFEFF/, "")
+    .replaceAll("\r\n", "\n")
+    .split("\n");
+  if (lines.pop() !== "" || lines.shift() !== columns.join(","))
+    throw Error("文件结尾或 Mooring 表头不完整");
+  if (!lines.length) throw Error("表中没有观测行");
+  return lines.map((line, i) => {
+    const fields = line.split(",");
+    const row = Object.fromEntries(columns.map((key, j) => [key, fields[j]]));
+    const seconds = Number(row.at_unix);
+    if (
+      fields.length !== columns.length ||
+      !/^\d+$/.test(row.at_unix) ||
+      !Number.isSafeInteger(seconds) ||
+      !Number.isFinite(Date.parse(row.at_utc)) ||
+      new Date(seconds * 1000).toISOString().replace(".000Z", "Z") !==
+        row.at_utc
+    )
+      throw Error(`第 ${i + 2} 行的列或 UTC 时间无效`);
+    const failCodes = [
+      "not_configured",
+      "unreachable",
+      "auth_failed",
+      "identity_mismatch",
+      "unsupported",
+      "malformed",
+      "local_failure",
+    ];
+    const read = row.outcome === "read";
+    if (
+      (!read &&
+        (row.outcome !== "failed" ||
+          !failCodes.includes(row.failure) ||
+          fields.slice(4).some(Boolean))) ||
+      (read &&
+        (row.failure || !["attached", "no_service"].includes(row.service)))
+    )
+      throw Error(`第 ${i + 2} 行的测量状态无效`);
+    if (read && row.service === "no_service" && fields.slice(8).some(Boolean))
+      throw Error(`第 ${i + 2} 行的无服务记录含有附着指标`);
+    const unsigned = (s) =>
+      /^(0|[1-9]\d*)$/.test(s) && BigInt(s) <= 18446744073709551615n;
+    if (
+      read &&
+      (!unsigned(row.uptime_secs) ||
+        !/^-?\d{1,3}$/.test(row.temperature_c) ||
+        Number(row.temperature_c) < -40 ||
+        Number(row.temperature_c) > 125 ||
+        row.thermal !== "normal")
+    )
+      throw Error(`第 ${i + 2} 行的设备读数无效`);
+    if (
+      read &&
+      row.service === "attached" &&
+      (!["nr5g", "lte"].includes(row.network_service) ||
+        !["nr_sub6", "lte", "lte_plus"].includes(row.data_service) ||
+        !/^[Bn][1-9]\d{0,2}$/.test(row.band) ||
+        !/^\d{3}-\d{2,3}$/.test(row.plmn) ||
+        !unsigned(row.ca_secondary_count) ||
+        Number(row.ca_secondary_count) > 255 ||
+        !unsigned(row.session_secs) ||
+        BigInt(row.session_secs) > BigInt(row.uptime_secs))
+    )
+      throw Error(`第 ${i + 2} 行的附着读数无效`);
+    const ranges = [
+      [-156, -31],
+      [-43, 20],
+      [-23, 40],
+      [-150, 0],
+      [-156, -31],
+      [-43, 20],
+      [-23, 40],
+    ];
+    for (let j = 0; j < signals.length; j++) {
+      const raw = row[signals[j]],
+        [min, max] = ranges[j];
+      if (
+        raw &&
+        (!/^-?\d+\.\d$/.test(raw) || Number(raw) < min || Number(raw) > max)
+      )
+        throw Error(`第 ${i + 2} 行的射频数值无效`);
+    }
+    return { line, row };
+  });
+}
+
+function stats(rows, key) {
+  const vals = rows
+    .map((x) => x.row[key])
+    .filter((x) => x !== "")
+    .map(Number)
+    .sort((a, b) => a - b);
+  if (!vals.length) return { count: 0, median: null };
+  const middle = Math.floor(vals.length / 2);
+  return {
+    count: vals.length,
+    median:
+      vals.length % 2 ? vals[middle] : (vals[middle - 1] + vals[middle]) / 2,
+  };
+}
+
+const el=id=>document.getElementById(id);
+let data=[];
+signals.forEach((key,i)=>{const item=document.createElement("option");item.value=key;item.textContent=signalLabels[i];el("select").append(item);});
+function refresh(){
+  const key=el("select").value, canvas=el("plot"), ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  for(const {row} of data){
+    const t=Number(row.at_unix); minX=Math.min(minX,t);maxX=Math.max(maxX,t);
+    if(row[key]!==""){const y=Number(row[key]);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
+  }
+  ctx.font="21px system-ui";ctx.fillStyle="#425e53";
+  if(!Number.isFinite(minY)){ctx.fillText("此指标暂无可用观测",70,120);}
+  else{
+    if(minY===maxY){minY--;maxY++;} if(minX===maxX){minX--;maxX++;}
+    const left=85,top=35,width=1165,height=205;
+    for(const fraction of [0,0.5,1]){
+      const y=top+height*fraction;ctx.fillStyle="#d2dbd5";ctx.fillRect(left,y,width,1);
+      ctx.fillStyle="#425e53";ctx.fillText(String(Number((maxY-(maxY-minY)*fraction).toFixed(2))),6,y+8);
+    }
+    ctx.fillStyle="#206958";
+    for(const {row} of data) if(row[key]!==""){
+      const x=left+(Number(row.at_unix)-minX)/(maxX-minX)*width;
+      const y=top+(maxY-Number(row[key]))/(maxY-minY)*height;
+      ctx.beginPath();ctx.arc(x,y,3,0,2*Math.PI);ctx.fill();
+    }
+    ctx.fillStyle="#425e53";
+    ctx.fillText(new Date(minX*1000).toISOString().slice(0,19).replace("T"," ")+" UTC",left,282);
+    ctx.textAlign="right";ctx.fillText(new Date(maxX*1000).toISOString().slice(0,19).replace("T"," ")+" UTC",left+width,282);ctx.textAlign="left";
+  }
+  const tbody=document.querySelector("tbody");tbody.replaceChildren(...signals.map((k,i)=>{
+    const t=document.createElement("tr");let lo=Infinity,hi=-Infinity;
+    for(const {row} of data){if(row[k]!==""){lo=Math.min(lo,Number(row[k]));hi=Math.max(hi,Number(row[k]));}}
+    const s=stats(data,k);
+    for(const value of [signalLabels[i],s.count?lo:"—",s.count?Number(s.median.toFixed(2)):"—",s.count?hi:"—",s.count+" / "+data.length]){const td=document.createElement("td");td.textContent=String(value);t.append(td);}
+    return t;
+  }));
+}
+el("select").addEventListener("change",refresh);
+el("file").addEventListener("change",async event=>{
+  const file=event.target.files[0];if(!file) return;
+  try{
+    if(file.size>32*1024*1024) throw Error("文件超过 32 MiB，请按日期拆分");
+    const next=readRows(await file.text());data=next;refresh();
+    const attached=data.filter(x=>x.row.service==="attached").length, off=data.filter(x=>x.row.service==="no_service").length;
+    el("status").textContent=file.name+" · "+data.length+" 次观测 · 已附着 "+attached+" · 无服务 "+off+" · 读取失败 "+(data.length-attached-off);
+    el("times").textContent="每个点代表一次有效读数。缺测留空，时间使用观测电脑的 UTC。";
+  }catch(err){el("status").textContent="导入失败："+err.message;}
+  event.target.value="";
+});refresh();
+</script></body></html>

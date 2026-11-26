@@ -33,7 +33,7 @@ pub extern "C" fn output_length() -> usize {
     OUTPUT.with_borrow(String::len)
 }
 
-/// kind 0 = device document, 1 = unreachable, 2 = session expired, 3 = invalid response.
+/// Source kinds: 0 = document, 1 = unreachable, 2 = expired session, 3 = invalid reply, 4 = local failure.
 /// The clock is the observing host's UTC seconds. JS supplies an exactly representable BigInt.
 #[unsafe(no_mangle)]
 pub extern "C" fn sample(length: usize, kind: u32, seconds: u64) -> u32 {

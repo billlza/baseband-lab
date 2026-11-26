@@ -7,5 +7,10 @@ chrome.action.onClicked.addListener(async (tab) => {
     url.searchParams.set("origin", origin);
     url.searchParams.set("tab", String(tab.id));
   }
-  await chrome.windows.create({ url: url.href, type: "popup", width: 660, height: 720 });
+  await chrome.windows.create({
+    url: url.href,
+    type: "popup",
+    width: 660,
+    height: 720,
+  });
 });
