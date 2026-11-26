@@ -1,0 +1,27 @@
+diff --git a/crates/daemon-core/src/router/netgear/allowlist.rs b/crates/daemon-core/src/router/netgear/allowlist.rs
+index 47e222c1..1725afc7 100644
+--- a/crates/daemon-core/src/router/netgear/allowlist.rs
++++ b/crates/daemon-core/src/router/netgear/allowlist.rs
+@@ -205,4 +205,5 @@ netgear_leaves! {
+     WwanDataService = ["wwan", "currentPSserviceType"] => Text { min: 1, max: 32, digit_run: 3 }, Status;
+-    /// `wwan.registerNetworkDisplay`: the network's display name.
+-    WwanNetworkName = ["wwan", "registerNetworkDisplay"] => Text { min: 1, max: 32, digit_run: 2 }, Status;
++    /// `wwan.registerNetworkDisplay`: the network's display name. The M7
++    /// reported an empty string while disconnected on 2026-11-18.
++    WwanNetworkName = ["wwan", "registerNetworkDisplay"] => OrEmpty(&Text { min: 1, max: 32, digit_run: 2 }), Status;
+     /// `wwan.sessDuration`: seconds the data session has lasted.
+diff --git a/crates/daemon-core/src/router/netgear/build.rs b/crates/daemon-core/src/router/netgear/build.rs
+index d3e1db36..52ec353b 100644
+--- a/crates/daemon-core/src/router/netgear/build.rs
++++ b/crates/daemon-core/src/router/netgear/build.rs
+@@ -100,2 +100,4 @@ impl Leaves {
+             LeafValue::Text(text) => Ok(text),
++            // This caller requires text, e.g. the network name of an attached radio.
++            LeafValue::Empty => Err(field(leaf, element, FieldFaultKind::InvalidText)),
+             LeafValue::Bool(_)
+@@ -104,4 +106,3 @@ impl Leaves {
+             | LeafValue::Digits(_)
+-            | LeafValue::Secret(_)
+-            | LeafValue::Empty => Err(field(leaf, element, FieldFaultKind::WrongType)),
++            | LeafValue::Secret(_) => Err(field(leaf, element, FieldFaultKind::WrongType)),
+         }

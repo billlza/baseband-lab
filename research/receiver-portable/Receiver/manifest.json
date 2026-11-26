@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3, "name": "Mooring · M7 接收机", "version": "1.0.0",
+  "description": "从已登录的 MR7450 管理页读取蜂窝指标，按 Mooring 研究格式保存到本机。",
+  "permissions": ["activeTab", "scripting"],
+  "background": { "service_worker": "action.js", "type": "module" },
+  "action": { "default_title": "采集这台 M7 的指标" },
+  "content_security_policy": { "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'" }
+}

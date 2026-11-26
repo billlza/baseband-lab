@@ -1,0 +1,47 @@
+name: Portable receiver validation
+on:
+  push:
+    branches: [research/portable-receiver-validation]
+permissions:
+  contents: read
+
+jobs:
+  receiver:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 22
+    defaults:
+      run:
+        working-directory: research/receiver-portable
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install the test browser and analysis dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npx --no-install playwright install --with-deps --no-shell chromium
+          python -m pip install --disable-pip-version-check numpy==2.4.3
+      - name: Exercise the receiver window, session states and CSV
+        run: node checks/browser.mjs browser-verification.json
+      - name: Replay the sixteen public I/Q windows from the pinned author revision
+        run: python replay/run.py --from-author --data public-originals --out measured
+      - name: Keep numerical verification only
+        uses: actions/upload-artifact@v4
+        with:
+          name: receiver-verification-${{ matrix.os }}
+          path: |
+            research/receiver-portable/browser-verification.json
+            research/receiver-portable/measured/verification.json
+          if-no-files-found: error
+          retention-days: 14

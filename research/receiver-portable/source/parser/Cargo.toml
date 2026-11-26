@@ -1,0 +1,18 @@
+[package]
+name = "m7-radio-reader"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+mooring-daemon-core = { path = "../mooring/crates/daemon-core" }
+mooring-model = { path = "../mooring/crates/model" }
+
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"
+strip = true
