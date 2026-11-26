@@ -11,6 +11,15 @@ classdef ReceiverStudyTest < matlab.unittest.TestCase
     end
 
     methods (Test)
+        function referenceDecodesSingleTapOnEveryDataCarrier(testCase)
+            config = baseband.OfdmConfig(ModulationOrder=64);
+            [samples, payload, truth] = baseband.drawFrame(config, 0, RandStream("twister", "Seed", 61));
+            truth.Taps = 0.25 - 0.5i;
+            [decoded, crc] = coherentReference(truth.Taps * samples, config, truth);
+            testCase.verifyEqual(decoded, payload);
+            testCase.verifyTrue(crc);
+        end
+
         function referenceUsesPhysicalTruthAndNoPayload(testCase)
             config = baseband.OfdmConfig(ModulationOrder=16);
             [samples, payload, truth] = baseband.drawFrame(config, 0, RandStream("twister", "Seed", 73), ...

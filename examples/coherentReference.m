@@ -15,7 +15,7 @@ function [payload, crcPassed] = coherentReference(samples, config, truth)
     corrected = baseband.frequencyOffset(samples, -truth.Offset, config.FftLength);
     fftBins = baseband.ofdmDemodulate(corrected, truth.Start, config.DataSymbols + 2, config);
     dataBins = config.binsOf(config.DataSubcarriers);
-    frequencyResponse = fft(truth.Taps(:), config.FftLength);
+    frequencyResponse = fft(truth.Taps(:), config.FftLength, 1);
     channel = repmat(frequencyResponse(dataBins), 1, config.DataSymbols);
     [symbols, gain, noise] = baseband.equalize(fftBins(dataBins, 3:end), channel, ...
         truth.NoiseVariance, "zf");
