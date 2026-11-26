@@ -1,11 +1,14 @@
-function summary = replayKnownCapture(filename)
+function summary = replayKnownCapture(filename, options)
 %REPLAYKNOWNCAPTURE Score one stored known frame in signed 12-bit I/Q counts.
 %   See docs/capture-replay.md for the capture fields and the two data sources.
+%   ScoreSamples restricts decoding to a predeclared prefix of a native block.
+%   Acquisition validity, ADC range and clipping still cover the whole block.
 
 % SPDX-License-Identifier: GPL-3.0-or-later
 
     arguments
         filename (1,1) string
+        options.ScoreSamples (1,1) double {mustBePositive, mustBeInteger, mustBeFinite}
     end
     archive = load(filename, "capture");
     fields = ["Source", "IQ", "SampleRateHz", "CenterFrequencyHz", "RxGainDb", ...
@@ -41,9 +44,17 @@ function summary = replayKnownCapture(filename)
     if any(~ismember(c.Payload, [0, 1]))
         error("baseband:capture:payload", "The known reference must contain payload bits.");
     end
-    samples = complex(double(c.IQ(:, 1)), double(c.IQ(:, 2)));
+    nativeCount = size(c.IQ, 1);
+    count = nativeCount;
+    if isfield(options, "ScoreSamples")
+        count = options.ScoreSamples;
+        if count > nativeCount
+            error("baseband:capture:shortBlock", "The native block does not contain the scoring window.");
+        end
+    end
+    samples = complex(double(c.IQ(1:count, 1)), double(c.IQ(1:count, 2)));
     result = baseband.receive(samples - mean(samples), c.SampleRateHz, config);
-    summary = struct("Source", origin, "SampleCount", numel(samples), ...
+    summary = struct("Source", origin, "SampleCount", numel(samples), "NativeSampleCount", nativeCount, ...
         "SampleRateHz", c.SampleRateHz, "CenterFrequencyHz", c.CenterFrequencyHz, ...
         "RxGainDb", c.RxGainDb, "RailComponents", atRail, "Detected", result.Detected, ...
         "Bits", 0, "BitErrors", NaN, "Ber", NaN, "CrcPassed", result.CrcPassed, ...
