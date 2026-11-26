@@ -11,6 +11,17 @@ classdef ReceiverStudyTest < matlab.unittest.TestCase
     end
 
     methods (Test)
+        function recordedFadingFramesReproduceTheCoherentArm(testCase)
+            seed = 260112;
+            trials = fadingCalibrationTrials(4, seed);
+            allArms = receiverTrials(baseband.OfdmConfig(ModulationOrder=16), 18, "multipath", 4, seed);
+            coherent = allArms(allArms.Receiver == "coherent", :);
+            testCase.verifyEqual(trials.BitErrors, coherent.BitErrors);
+            testCase.verifyEqual(trials.PayloadBits, coherent.Bits);
+            testCase.verifySize(trials{:, startsWith(trials.Properties.VariableNames, "Tap")}, [4, 16]);
+            testCase.verifyNotEqual(trials.TapQ8(1), trials.TapQ8(2));
+        end
+
         function referenceDecodesSingleTapOnEveryDataCarrier(testCase)
             config = baseband.OfdmConfig(ModulationOrder=64);
             [samples, payload, truth] = baseband.drawFrame(config, 0, RandStream("twister", "Seed", 61));

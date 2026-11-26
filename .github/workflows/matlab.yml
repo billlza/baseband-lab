@@ -87,3 +87,16 @@ jobs:
             study-output/frames.csv
             study-output/environment.json
           if-no-files-found: error
+      - name: Recreate the 16-QAM fading contrast and run the two fresh streams
+        id: fading
+        if: ${{ !cancelled() && steps.study.outcome == 'success' }}
+        uses: matlab-actions/run-command@bfa857648f4895aa98a446fe41c85e0788421ed5 # v3.3.0
+        with:
+          command: addpath("src", "examples"); runCoherentFadingCheck("fading-frames.csv")
+      - name: Upload the synthetic fading records
+        if: ${{ !cancelled() && steps.fading.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fading-calibration-${{ matrix.release }}-${{ github.run_attempt }}
+          path: fading-frames.csv
+          if-no-files-found: error
