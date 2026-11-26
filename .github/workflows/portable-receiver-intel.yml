@@ -1,0 +1,12 @@
+name: Portable receiver on Intel macOS
+on:
+  push:
+    branches: [research/portable-receiver-validation]
+    paths: [.github/workflows/portable-receiver-intel.yml]
+permissions:
+  contents: read
+jobs:
+  intel:
+    uses: ./.github/workflows/portable-receiver.yml
+    with:
+      systems: '["macos-15-intel"]'

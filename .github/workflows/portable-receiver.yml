@@ -2,6 +2,12 @@ name: Portable receiver validation
 on:
   push:
     branches: [research/portable-receiver-validation]
+    paths: ['research/receiver-portable/**']
+  workflow_call:
+    inputs:
+      systems:
+        type: string
+        default: '["ubuntu-24.04", "windows-2025", "macos-26"]'
 permissions:
   contents: read
 
@@ -10,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-26]
+        os: ${{ fromJSON(inputs.systems || '["ubuntu-24.04", "windows-2025", "macos-26"]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 22
     defaults:
