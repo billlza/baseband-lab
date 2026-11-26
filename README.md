@@ -139,3 +139,7 @@ use; a coaxial cable with attenuators between two radios radiates nothing.
 ## Licence
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
+
+## Paired receiver experiments
+
+`addpath("src","examples"); runReceiverStudy("study-output")` records the five receivers' decisions on matched frames across two seeded batches. The study specification states the denominators and uncertainty estimates. A separate replay interface scores a saved known-payload ADC capture. [Receiver study](docs/receiver-study.md) · [Capture replay](docs/capture-replay.md)

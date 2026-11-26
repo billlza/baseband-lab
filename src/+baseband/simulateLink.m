@@ -51,16 +51,9 @@ function results = simulateLink(config, snrDb, frames, options)
     for point = 1:count
         variance = 10^(-snrDb(point) / 10);
         for frame = 1:frames
-            payload = randi(stream, [0 1], config.PayloadBits, 1);
-            waveform = baseband.transmit(payload, config);
-            if options.Channel == "multipath"
-                waveform = conv(waveform, baseband.multipathTaps(options.Taps, options.Decay, stream));
-            end
-            delay = randi(stream, [0 options.MaxDelay]);
-            buffer = [zeros(delay, 1); waveform; zeros(config.FftLength, 1)];
-            offset = options.CfoRange * (2 * rand(stream) - 1);
-            buffer = baseband.frequencyOffset(buffer, offset, config.FftLength);
-            buffer = baseband.addNoise(buffer, variance, stream);
+            [buffer, payload] = baseband.drawFrame(config, variance, stream, ...
+                Channel=options.Channel, Taps=options.Taps, Decay=options.Decay, ...
+                CfoRange=options.CfoRange, MaxDelay=options.MaxDelay);
             result = baseband.receive(buffer, config.SampleRate, config, CfoRange=options.CfoRange, ...
                 Equalizer=options.Equalizer, Projection=options.Projection);
             if ~result.Detected

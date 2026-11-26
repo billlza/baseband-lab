@@ -1,10 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# The package under src/ and its tests under tests/, on hosted runners:
-# the oldest MATLAB release the package supports and the newest. A test
-# that issues a warning fails. A step holds the package's own files to
-# 95 % line coverage, and the last prints the link's error rate curves of
-# examples/linkCurves.m beside the theory.
+# Run the strict test suite, coverage gate, link curves and synthetic receiver
+# study on both supported releases. Keep each release's evidence separately.
 name: matlab
 
 on:
@@ -23,7 +20,7 @@ concurrency:
 jobs:
   tests:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -32,40 +29,61 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Test the coverage gate
+        run: python3 -B -m unittest discover -s scripts -p test_check_coverage.py -v
       - uses: matlab-actions/setup-matlab@f9e43010f1ae678f7cfa0542fe2a4f60f7d1ad8d # v3.1.0
         with:
           release: ${{ matrix.release }}
-      - uses: matlab-actions/run-tests@214a16e600ef2c705a4b2dd6c0794dc6957682a9 # v3.3.0
+      - id: matlab_tests
+        uses: matlab-actions/run-tests@214a16e600ef2c705a4b2dd6c0794dc6957682a9 # v3.3.0
         with:
           source-folder: src
           select-by-folder: tests
           strict: true
+          startup-options: -logfile matlab-tests.log
+          test-results-junit: matlab-tests.xml
           code-coverage-cobertura: coverage.xml
       - name: Line coverage of the package, at least 95 %
-        run: |
-          python3 - <<'PY'
-          import sys
-          import xml.etree.ElementTree as ET
-
-          classes = ET.parse("coverage.xml").getroot().findall("./packages/package/classes/class")
-          total = covered = 0
-          for found in sorted(classes, key=lambda found: found.get("filename")):
-              name = found.get("filename")
-              if "+baseband" not in name:
-                  continue
-              lines = found.findall("./lines/line")
-              hit = sum(1 for line in lines if int(line.get("hits")) > 0)
-              missed = [line.get("number") for line in lines if int(line.get("hits")) == 0]
-              print(f"{hit:4d} of {len(lines):4d}  {name}" + (f"  not run: {', '.join(missed)}" if missed else ""))
-              total += len(lines)
-              covered += hit
-          if total == 0:
-              named = sorted(found.get("filename") for found in classes)
-              sys.exit(f"the report names no line of the package; it names {named}")
-          print(f"{covered} of {total} lines, {covered / total:.2%}")
-          sys.exit(0 if covered >= 0.95 * total else "under 95 %")
-          PY
+        if: ${{ !cancelled() && steps.matlab_tests.outcome != 'skipped' }}
+        shell: bash
+        run: python3 scripts/check_coverage.py coverage.xml 2>&1 | tee coverage-summary.txt
+      - name: Upload coverage and test evidence
+        if: ${{ !cancelled() && steps.matlab_tests.outcome != 'skipped' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-${{ matrix.release }}-${{ github.run_attempt }}
+          path: |
+            coverage.xml
+            coverage-summary.txt
+            matlab-tests.xml
+            matlab-tests.log
+          if-no-files-found: error
       - name: The error rate curves
+        if: ${{ !cancelled() && steps.matlab_tests.outcome == 'success' }}
         uses: matlab-actions/run-command@bfa857648f4895aa98a446fe41c85e0788421ed5 # v3.3.0
         with:
           command: addpath("src", "examples"); disp(linkCurves())
+      - name: Create a fresh output directory for the synthetic study
+        id: study_path
+        if: ${{ !cancelled() && steps.matlab_tests.outcome == 'success' }}
+        run: mkdir study-output
+      - name: Run the synthetic receiver study
+        id: study
+        if: ${{ !cancelled() && steps.study_path.outcome == 'success' }}
+        uses: matlab-actions/run-command@bfa857648f4895aa98a446fe41c85e0788421ed5 # v3.3.0
+        with:
+          command: addpath("src", "examples"); runReceiverStudy("study-output")
+      - name: Check the study produced both outputs
+        if: ${{ !cancelled() && steps.study.outcome == 'success' }}
+        run: |
+          test -s study-output/frames.csv
+          test -s study-output/environment.json
+      - name: Upload synthetic study results
+        if: ${{ !cancelled() && (steps.study.outcome == 'success' || steps.study.outcome == 'failure') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: receiver-study-${{ matrix.release }}-${{ github.run_attempt }}
+          path: |
+            study-output/frames.csv
+            study-output/environment.json
+          if-no-files-found: error
