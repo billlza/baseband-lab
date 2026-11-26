@@ -30,7 +30,8 @@ function rows = replayPublicWindows(folder, outputFile)
 end
 
 function row = adapter(x, entry, truth, config)
-    row = struct("Identified", false, "Bits", 0, "BitErrors", NaN, "Crc32Passed", NaN);
+    row = struct("Identified", false, "Bits", 0, "BitErrors", NaN, "Ber", NaN, ...
+        "Crc32Passed", NaN, "Crc32ReceivedHex", "", "Crc32ComputedHex", "");
     pilots = [-21; -7; 7; 21];
     used = [-26:-1, 1:26].';
     data = setdiff(used, pilots);
@@ -102,8 +103,13 @@ function row = adapter(x, entry, truth, config)
                 got = bitor(got, bitshift(uint32(decoded(end-3+bit)), 8*bit));
             end
             pairs = pairs + 1;
-            row = struct("Identified", true, "Bits", numel(truth)*8, "BitErrors", errors, ...
-                "Crc32Passed", double(checksum == got));
+            row.Identified = true;
+            row.Bits = numel(truth)*8;
+            row.BitErrors = errors;
+            row.Ber = errors/row.Bits;
+            row.Crc32Passed = double(checksum == got);
+            row.Crc32ReceivedHex = string(lower(dec2hex(got, 8)));
+            row.Crc32ComputedHex = string(lower(dec2hex(checksum, 8)));
         end
     end
     if pairs > 1

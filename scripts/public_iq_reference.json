@@ -1,0 +1,247 @@
+{
+  "dataset": "lkk688/ofdm-preamble-intelligence",
+  "revision": "e824d4b827529cf6b59f8658887a09958069bfc7",
+  "python_result_sha256": "f788bba31d485625b334a4a3c705173f5bda963575c5fe9d828903463db52e34",
+  "python_decoder_sha256": "d4ac0bd4fe617213052b04576e4fc503d215486d5b179ba880ca63cfb8dfb7e3",
+  "reference_sha256": "336a5e9a911ed8d6de575a1a2a71834918a0c073d62b3411b71c8f627acceed9",
+  "runs": {
+    "qpsk": {
+      "source": "coax/ber_sweep_v2/run_20260429_093858",
+      "config_bytes": 1098,
+      "config_sha256": "d0308ff8f7c702cfb67ebcbc65e8ebac7e05c55a7426f2f58ec51e0b348059c6",
+      "windows": [
+        {
+          "file": "cap_000004_ok.npz",
+          "bytes": 2061060,
+          "sha256": "a0a3134e12bfc16c58004b06ecbe281d092c09ce43ca666bd7dea5fef8938f83",
+          "candidate_sha256": "581c82d41d03d85bc20381ed66fd8d8f6f18725e013d890d4725b3502563841e",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000005_ok.npz",
+          "bytes": 2063140,
+          "sha256": "8631168e4943bd4a189aff1dd64be8f1a3f228323c1820ab180bc7e79aff5e0c",
+          "candidate_sha256": "581c82d41d03d85bc20381ed66fd8d8f6f18725e013d890d4725b3502563841e",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000007_ok.npz",
+          "bytes": 2067914,
+          "sha256": "f9a7de4e0aa2cb5b0812f469ad275b6a52529583cb40afad7c9f413a08fc10ac",
+          "candidate_sha256": "f24b3fe9bd89a8f4451486e659d222a0ebf8e8009e7ada0462e2494e5dd1e880",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000008_ok.npz",
+          "bytes": 2074112,
+          "sha256": "7e2a35c4a76716d7f40a5585131d9d43a9e7fe19e70066c649ec548fa7cf3edd",
+          "candidate_sha256": "f24b3fe9bd89a8f4451486e659d222a0ebf8e8009e7ada0462e2494e5dd1e880",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000009_ok.npz",
+          "bytes": 2070882,
+          "sha256": "54b34d4f1c3b0266ad0a7ce1b4133672c543a4021a30f5b0d3be7a44b0c7df53",
+          "candidate_sha256": "73f791d18bc966b007f20901aff8e6c5ecee50143dd6db3323094191907451ee",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000010_ok.npz",
+          "bytes": 2067194,
+          "sha256": "35bf1c331612b0f849b28b4adfa741cffab5d29a8c623289cd9b8d0d1e0690c5",
+          "candidate_sha256": "73f791d18bc966b007f20901aff8e6c5ecee50143dd6db3323094191907451ee",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000011_ok.npz",
+          "bytes": 2062567,
+          "sha256": "e9203842667af546d591ff39ad1623f2eb883f08098aa848abbd1f0fa4477636",
+          "candidate_sha256": "4a5da435e1790f983fd449e98e89434e93ac5ced423f7d758bde795805cefdc7",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000012_ok.npz",
+          "bytes": 2062512,
+          "sha256": "b540079b0345f22ecfe7cd640a6b50e9a78e7fc7852aebd537b9a1d69421df0f",
+          "candidate_sha256": "bf1229c7907dec3bee80264335afb53ac6143a9c42306f6cbe5afaf611bf030e",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        }
+      ]
+    },
+    "qam16": {
+      "source": "coax/ber_sweep_v3/run_20260429_150637",
+      "config_bytes": 1224,
+      "config_sha256": "d73e94cb2dc7c4f90dab9de924ed2d8a0d8f6b07956a25b9c157a602f3565408",
+      "windows": [
+        {
+          "file": "cap_000001_ok.npz",
+          "bytes": 2006835,
+          "sha256": "76e576f205b388ef122448b7077f3a3cb53122308c0f445e3bb3a46fa36334fa",
+          "candidate_sha256": "389fd91745c5e596eae49ef50d8a40e7051b46d4c8075235b4ea59f57670028f",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 0,
+            "ber": 0.0,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "685e0ccf",
+            "crc32_pass": true
+          }
+        },
+        {
+          "file": "cap_000002_fail.npz",
+          "bytes": 2031735,
+          "sha256": "7efa4f2c8c004fab1d1f8c853882b0a0d92274ba58e5980d35f86d63ab4b4cfa",
+          "candidate_sha256": "06491b2db33217a111e6360ae5833546d4c502ae72624cd786c65563baaa03c8",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 6,
+            "ber": 0.00146484375,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "70ed9814",
+            "crc32_pass": false
+          }
+        },
+        {
+          "file": "cap_000003_fail.npz",
+          "bytes": 2039243,
+          "sha256": "2f2a0c84c89462731bd2cbd999ceba3bf51a5b7fc2ff4aeaad0fc6e9cfdbe841",
+          "candidate_sha256": "b925c324c8444aa270aad94981d34bb4fc873a4087cf92b00cb8c918e33d6e12",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 8,
+            "ber": 0.001953125,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "29d2e036",
+            "crc32_pass": false
+          }
+        },
+        {
+          "file": "cap_000004_fail.npz",
+          "bytes": 2024695,
+          "sha256": "6ebe508af2de4bc66e8c5fa81b6f5223fc2a2d5ea5380efa7cb396fc42c48b3c",
+          "candidate_sha256": "893087d5d938d49ac01d9a3471378bf4754f98960e6668ead5bac32128b1bb09",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 19,
+            "ber": 0.004638671875,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "8fc1ce73",
+            "crc32_pass": false
+          }
+        },
+        {
+          "file": "cap_000005_fail.npz",
+          "bytes": 2024664,
+          "sha256": "fea276d42af107e4dab9d5068db2d50433b4999395d91b9eb1f5592c25907dac",
+          "candidate_sha256": "881f5db1c4fd6bf79e5458140cc8504342bc7ff193f34d3481ec2cb0dcd939ac",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 23,
+            "ber": 0.005615234375,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "153ed5ef",
+            "crc32_pass": false
+          }
+        },
+        {
+          "file": "cap_000006_fail.npz",
+          "bytes": 2026628,
+          "sha256": "cfa743497402e728a705c9b6af03e10cf2c08ec8961f228f75b94ae03a6acbfa",
+          "candidate_sha256": "f2ec0d61a0217442a3c9e1189528bd7043f1dae134a0128e4b8c1a31ec3595e3",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 31,
+            "ber": 0.007568359375,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "824e8b23",
+            "crc32_pass": false
+          }
+        },
+        {
+          "file": "cap_000007_fail.npz",
+          "bytes": 2015276,
+          "sha256": "80f992537e12543a3015a842ef55b3226e2f6f351716bbb1aa7b126d7d975307",
+          "candidate_sha256": "e06485fc0a51845b8cdbc89603b179b2a0f1d11a611780dc90d5cdd75fa5d633",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 37,
+            "ber": 0.009033203125,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "51f17508",
+            "crc32_pass": false
+          }
+        },
+        {
+          "file": "cap_000008_fail.npz",
+          "bytes": 2024250,
+          "sha256": "4f4ad5e60178610c87e31c5f2c82aabd46b529fcc2b9a2d09c13e8d2f44990de",
+          "candidate_sha256": "e20353a340e879cf384dbd3098e07ec475dd3a703ecc07bedfb883f1ad5b660d",
+          "python": {
+            "bits": 4096,
+            "bit_errors": 40,
+            "ber": 0.009765625,
+            "crc32_received_hex": "685e0ccf",
+            "crc32_computed_hex": "01e37a26",
+            "crc32_pass": false
+          }
+        }
+      ]
+    }
+  }
+}
